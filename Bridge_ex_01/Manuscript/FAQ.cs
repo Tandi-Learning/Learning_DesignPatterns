@@ -4,18 +4,22 @@ using System.Text;
 
 namespace Bridge_ex_01
 {
-    class FAQ
+    public class FAQ : Manuscript
     {
+        public FAQ(IMyFormatter formatter) : base(formatter)
+        {
+        }
+
         public string Title { get; set; }
         public List<FAQQuestion> Questions { get; set; }
 
-        public void Print()
+        public override void Print()
         {
-            Console.WriteLine("Title: {0}", Title);
+            Console.WriteLine(formatter.Format("Title", Title));
             foreach(var question in Questions)
             {
-                Console.WriteLine(">> Q: {0}", question.Question);
-                Console.WriteLine(">> A: {0}", question.Answer);
+                Console.WriteLine(formatter.Format(">> Q", question.Question));
+                Console.WriteLine(formatter.Format(">> A", question.Answer));
             }
             
             Console.WriteLine();
