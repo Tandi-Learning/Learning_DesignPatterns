@@ -1,4 +1,5 @@
 using System;
+using Repository.Data;
 
 namespace Repository.Models
 {
@@ -6,5 +7,6 @@ namespace Repository.Models
     {
         public string AccountNumber { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public SalesTerritory Territory { get; set; }
     }
 }
