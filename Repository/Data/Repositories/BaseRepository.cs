@@ -19,6 +19,7 @@ namespace Repository.Data.Repositories
         public void Delete(T entity)
         {
             DbContext.Set<T>().Remove(entity);
+            DbContext.SaveChanges();
         }
 
         public T Get(int id)
