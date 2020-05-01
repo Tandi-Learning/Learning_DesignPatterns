@@ -4,49 +4,57 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Repository.Data.Interfaces;
+using Repository.Repositories;
 
 namespace Repository.Data.Repositories
 {
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
-        private CompanyDbContext DbContext;
+        private CompanyDbContext _dbContext;
+        private UnitOfWork _uow;
 
-        public BaseRepository(CompanyDbContext DbContext)
+        public BaseRepository(
+            CompanyDbContext dbContext,
+            UnitOfWork uow)
         {
-            this.DbContext = DbContext;
+            _dbContext = dbContext;
+            _uow = uow;
         }
 
         public void Delete(T entity)
         {
-            DbContext.Set<T>().Remove(entity);
-            DbContext.SaveChanges();
+            _dbContext.Set<T>().Remove(entity);
+            // _dbContext.SaveChanges(); // moved to unit of work
+            _uow.Save();
         }
 
         public T Get(int id)
         {
-            return DbContext.Set<T>().Find(id);
+            return _dbContext.Set<T>().Find(id);
         }
 
-        public int Insert(T entity)
+        public void Insert(T entity)
         {
-            DbContext.Set<T>().Add(entity);
-            return DbContext.SaveChanges();
+            _dbContext.Set<T>().Add(entity);
+            // _dbContext.SaveChanges(); // moved to unit of work
+            _uow.Save();
         }
 
         public IList<T> List()
         {
-            return DbContext.Set<T>().ToList();
+            return _dbContext.Set<T>().ToList();
         }
 
         public IList<T> List(Expression<Func<T, bool>> expression)
         {
-            return DbContext.Set<T>().Where(expression).ToList();
+            return _dbContext.Set<T>().Where(expression).ToList();
         }
 
-        public int Update(T entity)
+        public void Update(T entity)
         {
-            DbContext.Entry<T>(entity).State = EntityState.Modified;
-            return DbContext.SaveChanges();
+            _dbContext.Entry<T>(entity).State = EntityState.Modified;
+            // _dbContext.SaveChanges();  // moved to unit of work
+            _uow.Save();
         }
     }
 }

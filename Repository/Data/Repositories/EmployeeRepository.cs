@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using Repository.Data.Entities;
 using Repository.Data.Interfaces;
+using Repository.Repositories;
 
 namespace Repository.Data.Repositories
 {
     public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
     {
-        public EmployeeRepository(CompanyDbContext DbContext) : base(DbContext)
+        public EmployeeRepository(
+            CompanyDbContext dbContext,
+            UnitOfWork uow) : 
+            base(dbContext, uow)
         {
         }
 
