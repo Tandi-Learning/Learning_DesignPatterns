@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MyShop.Domain.Models;
 using MyShop.Infrastructure;
+using MyShop.Infrastructure.Interfaces;
+using MyShop.Infrastructure.Repositories;
 
 namespace MyShop.Web
 {
@@ -27,11 +30,16 @@ namespace MyShop.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddControllersWithViews();
 
             CreateInitialDatabase();
 
             services.AddTransient<ShoppingContext>();
+            services.AddTransient<IRepository<Order>, OrderRepository>();
+            services.AddTransient<IRepository<Product>, ProductRepository>();
+            services.AddTransient<IRepository<Customer>, CustomerRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
        
         }
 
@@ -59,7 +67,7 @@ namespace MyShop.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -71,15 +79,14 @@ namespace MyShop.Web
                 app.UseHsts();
             }
 
+            app.UseRouting();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Order}/{action=Index}/{id?}");
+            app.UseEndpoints(configure => {
+                configure.MapControllerRoute("default", "{controller=Order}/{action=Index}/{id?}");
             });
         }
     }

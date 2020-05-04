@@ -5,32 +5,31 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyShop.Domain.Models;
 using MyShop.Infrastructure;
+using MyShop.Infrastructure.Interfaces;
 using MyShop.Web.Models;
 
 namespace MyShop.Web.Controllers
 {
     public class OrderController : Controller
     {
-        private ShoppingContext context;
+        private IUnitOfWork unitOfWork;
 
-        public OrderController()
+        public OrderController(IUnitOfWork unitOfWork)
         {
-            context = new ShoppingContext();
+            this.unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            var orders = context.Orders
-                .Include(order => order.LineItems)
-                .ThenInclude(lineItem => lineItem.Product)
-                .Where(order => order.OrderDate > DateTime.UtcNow.AddDays(-1)).ToList();
+            var orders = unitOfWork.OrderRepository
+                .Find(order => order.OrderDate > DateTime.UtcNow.AddDays(-1));
 
             return View(orders);
         }
 
         public IActionResult Create()
         {
-            var products = context.Products.ToList();
+            var products = unitOfWork.ProductRepository.All();
 
             return View(products);
         }
@@ -42,14 +41,36 @@ namespace MyShop.Web.Controllers
 
             if (string.IsNullOrWhiteSpace(model.Customer.Name)) return BadRequest("Customer needs a name");
 
-            var customer = new Customer
+            // var customer = new Customer
+            // {
+            //     Name = model.Customer.Name,
+            //     ShippingAddress = model.Customer.ShippingAddress,
+            //     City = model.Customer.City,
+            //     PostalCode = model.Customer.PostalCode,
+            //     Country = model.Customer.Country
+            // };
+
+            var customer = unitOfWork.CustomerRepository.Find(c => c.Name == model.Customer.Name).FirstOrDefault();
+
+            if (customer != null)
             {
-                Name = model.Customer.Name,
-                ShippingAddress = model.Customer.ShippingAddress,
-                City = model.Customer.City,
-                PostalCode = model.Customer.PostalCode,
-                Country = model.Customer.Country
-            };
+                customer.ShippingAddress = model.Customer.ShippingAddress;
+                customer.PostalCode = model.Customer.PostalCode;
+                customer.City = model.Customer.City;
+                customer.Country = model.Customer.Country;
+
+                unitOfWork.CustomerRepository.Update(customer);
+            }
+            else
+            {
+                customer = new Customer {
+                    Name = model.Customer.Name,
+                    ShippingAddress = model.Customer.ShippingAddress,
+                    PostalCode = model.Customer.PostalCode,
+                    City = model.Customer.City,
+                    Country = model.Customer.Country,
+                };
+            }
 
             var order = new Order
             {
@@ -60,9 +81,9 @@ namespace MyShop.Web.Controllers
                 Customer = customer
             };
 
-            context.Orders.Add(order);
+            unitOfWork.OrderRepository.Add(order);
 
-            context.SaveChanges();
+            unitOfWork.SaveChanges();
 
             return Ok("Order Created");
         }
