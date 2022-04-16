@@ -30,7 +30,8 @@ namespace Repository
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CompanyDbContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("CompanyConnection"))
+                options.UseSqlServer(Configuration.GetConnectionString("CompanyConnection"))
+                // options.UseSqlite(Configuration.GetConnectionString("CompanyConnection"))
             );
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(

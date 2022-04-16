@@ -5,6 +5,6 @@ namespace Repository.Data.Interfaces
 {
     public interface IEmployeeRepository : IBaseRepository<Employee>
     {
-        List<Employee> GeFulltimeEmployee();
+        IEnumerable<Employee> GetEmployees();
     }
 }

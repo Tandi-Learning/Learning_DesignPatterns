@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Repository.Data.Entities;
 using Repository.Data.Interfaces;
 using Repository.Repositories;
@@ -12,11 +13,14 @@ namespace Repository.Data.Repositories
             UnitOfWork uow) : 
             base(dbContext, uow)
         {
+            this.dbContext = dbContext;
         }
 
-        public List<Employee> GeFulltimeEmployee()
+        public CompanyDbContext dbContext { get; }
+
+        public IEnumerable<Employee> GetEmployees()
         {
-            throw new System.NotImplementedException();
+            return null;
         }
     }
 }
