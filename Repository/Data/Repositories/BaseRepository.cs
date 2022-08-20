@@ -4,57 +4,57 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Repository.Data.Interfaces;
-using Repository.Repositories;
+using Repository.Data.Repositories;
 
 namespace Repository.Data.Repositories
 {
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private CompanyDbContext _dbContext;
-        private UnitOfWork _uow;
 
-        public BaseRepository(
-            CompanyDbContext dbContext,
-            UnitOfWork uow)
+        public BaseRepository(CompanyDbContext dbContext)
         {
             _dbContext = dbContext;
-            _uow = uow;
         }
 
-        public void Delete(T entity)
+        public virtual void Delete(T entity)
         {
             _dbContext.Set<T>().Remove(entity);
-            // _dbContext.SaveChanges(); // moved to unit of work
-            _uow.Save();
         }
 
-        public T Get(int id)
+        public virtual T Get(int id)
         {
             return _dbContext.Set<T>().Find(id);
         }
 
-        public void Insert(T entity)
+        public virtual T Insert(T entity)
         {
-            _dbContext.Set<T>().Add(entity);
-            // _dbContext.SaveChanges(); // moved to unit of work
-            _uow.Save();
+            var result = _dbContext.Set<T>().Add(entity);
+
+            return result.Entity;
         }
 
-        public IList<T> List()
+        public virtual IEnumerable<T> List()
         {
             return _dbContext.Set<T>().ToList();
         }
 
-        public IList<T> List(Expression<Func<T, bool>> expression)
+        public virtual IEnumerable<T> Find(Expression<Func<T, bool>> expression)
         {
-            return _dbContext.Set<T>().Where(expression).ToList();
+            return _dbContext.Set<T>().AsQueryable()
+                .Where(expression)
+                .ToList();
         }
 
-        public void Update(T entity)
+        public virtual T Update(T entity)
         {
             _dbContext.Entry<T>(entity).State = EntityState.Modified;
-            // _dbContext.SaveChanges();  // moved to unit of work
-            _uow.Save();
+
+            return entity;
+        }
+
+        public virtual void Save()
+        {
         }
     }
 }

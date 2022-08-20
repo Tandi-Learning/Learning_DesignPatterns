@@ -1,17 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Repository.Data.Entities;
 using Repository.Data.Interfaces;
-using Repository.Repositories;
+using Repository.Data.Repositories;
 
 namespace Repository.Data.Repositories
 {
     public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
     {
-        public EmployeeRepository(
-            CompanyDbContext dbContext,
-            UnitOfWork uow) : 
-            base(dbContext, uow)
+        public EmployeeRepository(CompanyDbContext dbContext)
+            : base(dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -21,6 +22,11 @@ namespace Repository.Data.Repositories
         public IEnumerable<Employee> GetEmployees()
         {
             return null;
+        }
+        
+        public override IEnumerable<Employee> List()
+        {
+            return dbContext.Set<Employee>().Include(d => d.Department).ToList();
         }
     }
 }

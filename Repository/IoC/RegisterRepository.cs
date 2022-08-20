@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Repository.Data.Interfaces;
 using Repository.Data.Repositories;
-using Repository.Repositories;
 
 namespace Repository.IoC
 {
@@ -8,8 +8,7 @@ namespace Repository.IoC
     {
         public static void RegisterRepositories(this IServiceCollection services)
         {
-            services.AddTransient<EmployeeRepository>();
-            services.AddTransient<UnitOfWork>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
     }
 }

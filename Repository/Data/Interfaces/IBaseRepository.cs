@@ -8,10 +8,11 @@ namespace Repository.Data.Interfaces
     public interface IBaseRepository<T> where T : class
     {
         T Get(int id);
-        IList<T> List();
-        IList<T> List(Expression<Func<T, bool>> expression);
-        void Insert(T entity);
-        void Update(T entity);
+        IEnumerable<T> List();
+        IEnumerable<T> Find(Expression<Func<T, bool>> expression);
+        T Insert(T entity);
+        T Update(T entity);
         void Delete(T entity);
+        void Save();
     }
 }

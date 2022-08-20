@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Data.Entities;
+using Repository.Data.Interfaces;
 using Repository.Data.Repositories;
 using Repository.Models;
 
@@ -7,15 +8,17 @@ namespace Repository.Controllers
 {
     public class EmployeeController : Controller
     {
-        private EmployeeRepository _employeeRepository;
+        private IBaseRepository<Employee> employeeRepository;
+        private readonly IUnitOfWork uow;
 
-        public EmployeeController(EmployeeRepository employeeRepository)
+        public EmployeeController(IUnitOfWork unitOfWork)
         {
-            _employeeRepository = employeeRepository;
+            employeeRepository = unitOfWork.EmployeeRepository;
+            uow = unitOfWork;
         }
         public IActionResult List()
         {
-            var employees = _employeeRepository.List();
+            var employees = employeeRepository.List();
             return View(employees);
         }
 
@@ -26,47 +29,51 @@ namespace Repository.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add(AddEmployeeModel model)
+        public Employee Add(AddEmployeeModel model)
         {
-            _employeeRepository.Insert(new Employee 
+            var employee = employeeRepository.Insert(new Employee 
                 {
                     Firstname = model.Firstname,
                     Lastname = model.Lastname,
                     Level = model.Level
                 });
-            return View();
+            uow.SaveChanges();
+            return employee;
         }
 
         [HttpGet]
         public IActionResult Edit(int Id)
         {
-            var employee = _employeeRepository.Get(Id);
+            var employee = employeeRepository.Get(Id);
             EditEmployeeModel model = new EditEmployeeModel {
                 Id = employee.Id,
                 Firstname = employee.Firstname,
                 Lastname = employee.Lastname,
                 Level = employee.Level,
             };
+            uow.SaveChanges();
             return View(model);
         }
 
         [HttpPost]
         public IActionResult Edit(EditEmployeeModel model)
         {
-            _employeeRepository.Update(new Employee
+            employeeRepository.Update(new Employee
             {
                 Id = model.Id,
                 Firstname = model.Firstname,
                 Lastname = model.Lastname,
                 Level = model.Level
             });
+            uow.SaveChanges();
             return RedirectToAction("List");
         }
 
         public IActionResult Delete(int Id)
         {
-            var employee = _employeeRepository.Get(Id);
-            _employeeRepository.Delete(employee);
+            var employee = employeeRepository.Get(Id);
+            employeeRepository.Delete(employee);
+            uow.SaveChanges();           
             return RedirectToAction("List");
         }
     }

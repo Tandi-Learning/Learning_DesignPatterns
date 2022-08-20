@@ -1,19 +1,38 @@
-using Repository.Data;
+using Repository.Data.Entities;
+using Repository.Data.Interfaces;
 
-namespace Repository.Repositories
+namespace Repository.Data.Repositories;
+public class UnitOfWork : IUnitOfWork
 {
-    public class UnitOfWork
+    private CompanyDbContext dbContext;
+    private IBaseRepository<Department> departmentRepository;
+    private IBaseRepository<Employee> employeeRepository;
+
+    public UnitOfWork(CompanyDbContext dbContext)
     {
-        private CompanyDbContext _dbContext;
+        this.dbContext = dbContext;
+    }
 
-        public UnitOfWork(CompanyDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+    public IBaseRepository<Department> DepartmentRepository {
+        get {
+            if (departmentRepository is null) 
+                departmentRepository = new DepartmentRepository(dbContext);
 
-        public void Save()
-        {
-            _dbContext.SaveChanges();
+            return departmentRepository;
         }
+    }
+
+    public IBaseRepository<Employee> EmployeeRepository {
+        get {
+            if (employeeRepository is null) 
+                employeeRepository = new EmployeeRepository(dbContext);
+
+            return employeeRepository;
+        }
+    }
+
+    public void SaveChanges()
+    {
+        dbContext.SaveChanges();
     }
 }
